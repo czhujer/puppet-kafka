@@ -15,7 +15,16 @@ class kafka::install (
   $package_dir   = $kafka::package_dir,
   $config_dir    = $kafka::config_dir,
   $log_dir       = $kafka::log_dir,
+  $restart_package_change = $kafka::restart_package_change,
+  $service_install        = $kafka::service_install,
+  $service_name           = $kafka::service_name,
 ) {
+
+  if ($service_install and $restart_package_change) {
+    $install_notify = Service[$service_name]
+  } else {
+    $install_notify = undef
+  }
 
   if $manage_java {
     class { 'java':
@@ -81,6 +90,7 @@ class kafka::install (
     file { '/opt/kafka':
       ensure  => link,
       target  => $install_directory,
+      notify  => $install_notify,
       require => File[$install_directory],
     }
 
